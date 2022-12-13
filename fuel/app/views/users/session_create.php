@@ -7,6 +7,13 @@
 </ul>
 <h3>Session Create</h3>
 <?php if ($cookie_value == null) { ?>
+	<?php if ($user_id == false) { ?>
+		<h5>You have entered incorrect information.</h5>
+	<?php } else { ?>
+		<h5>User Create Success with ID = <?php echo $user_id ?></h5>
+		<hr/>
+		<p>Your User is <a href="/users/show/<?php echo $user_id ?>"><?php echo $email ?></a> with password of <?php echo $password ?></p>
+	<?php } ?>
 <?php } else { ?>
 	<h5>You have already logged in...</h5>
 <?php } ?>

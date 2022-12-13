@@ -119,7 +119,7 @@ class User extends \Orm\Model
 		if ( $user_password != $password ) {
 			return false;
 		}
-		return true;
+		return $user;
 	}
 	public static function insertUser($email, $password, $cookie) {
 		$email_check = preg_match("/^([a-zA-Z0-9])+([a-zA-Z0-9\._-])*@([a-zA-Z0-9_-])+([a-zA-Z0-9\._-]+)+$/", $email);
@@ -157,6 +157,10 @@ class User extends \Orm\Model
 			return false;
 		}
 		if ($cookie_user["id"] != $id) {
+			return false;
+		}
+		$email_user = User::fetchByEmailSafe($email);
+		if ($email_user[0] != false) {
 			return false;
 		}
 		$user = User::find($cookie_user["id"]);

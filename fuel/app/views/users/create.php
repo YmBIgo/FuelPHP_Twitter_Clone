@@ -12,7 +12,7 @@
 	<?php } else { ?>
 		<h5>User Create Success with ID = <?php echo $user_id ?></h5>
 		<hr/>
-		<p><a href="/users/show/<?php echo $user_id ?>"><?php echo $email ?></a></p>
+		<p>Your User is <a href="/users/show/<?php echo $user_id ?>"><?php echo $email ?></a> with password of <?php echo $password ?></p>
 	<?php } ?>
 <?php } else { ?>
 	<h5>You have already logged in...</h5>

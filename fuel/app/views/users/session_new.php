@@ -7,6 +7,15 @@
 </ul>
 <h3>Session New</h3>
 <?php if ($cookie_value == null) { ?>
+	<?php echo Form::open(array('action' => 'users/session/create', 'method' => 'POST')) ?>
+		<?php echo Form::label("Email", "email"); ?>
+		<?php echo Form::input("email", '', array('class' => 'form-control', 'style' => 'width:500px')) ?>
+		<?php echo Form::label("Password", "password"); ?>
+		<?php echo Form::password("password", '', array('class' => 'form-control', 'style' => 'width:500px')) ?>
+		<?php echo Form::hidden($token['token_key'], $token['token']); ?>
+		<br/>
+		<?php echo Form::submit("submit", "送信する", array('class' => 'btn btn-primary')); ?>
+	<?php echo Form::close(); ?>
 <?php } else { ?>
 	<h5>You have already logged in...</h5>
 <?php } ?>

@@ -187,4 +187,42 @@ class Test_Model_User extends TestCase {
 		$this->assertSame($user_info["name"], $name);
 		$this->assertSame($user_info["description"], $description);
 	}
+	// in email update test, we should test whether email is not duplicated
+	public function test_user_update4_email() {
+		User::deleteAllUsers();
+		User::insertUser("hoge@hoge.com", "hogehoge", null);
+		$user = User::fetchByEmailUnSafe("hoge@hoge.com")[0];
+		$this->assertSame($user == false, false);
+		$email = "hoge2@hoge.com";
+		$update_result = User::updateUserEmail($user["id"], $user["cookie_value"], $email);
+		$this->assertSame($update_result, true);
+		$user_info_old = User::fetchByEmailSafe("hoge@hoge.com")[0];
+		$this->assertSame($user_info_old, false);
+		$user_info_new = User::fetchByEmailSafe("hoge2@hoge.com")[0];
+		$this->assertSame($user_info_new == false, false);
+		$this->assertSame($user_info_new["email"], $email);
+	}
+	// email duplication that results in fail
+	public function test_user_update5_email_fail() {
+		User::deleteAllUsers();
+		User::insertUser("hoge@hoge.com", "hogehoge", null);
+		User::insertUser("hoge1@hoge.com", "hogehoge", null);
+		$user = User::fetchByEmailUnSafe("hoge@hoge.com")[0];
+		$this->assertSame($user == false, false);
+		$email = "hoge1@hoge.com";
+		$update_result = User::updateUserEmail($user["id"], $user["cookie_value"], $email);
+		$this->assertSame($update_result, false);
+	}
+	// password
+	public function test_user_update6_password() {
+		User::deleteAllUsers();
+		User::insertUser("hoge@hoge.com", "hogehoge", null);
+		$user = User::fetchByEmailUnSafe("hoge@hoge.com")[0];
+		$this->assertSame($user == false, false);
+		$new_password = "hogehoge2";
+		$update_result = User::updateUserPassword($user["id"], $user["cookie_value"], $new_password);
+		$this->assertSame($update_result, true);
+		$user_check_result = User::fetchByEmailAndPassword("hoge@hoge.com", $new_password);
+		$this->assertSame($user_check_result, true);
+	}
 }

@@ -24,6 +24,9 @@ class Controller_Users extends Controller_Template
 
 	public function action_index()
 	{
+		$data = array();
+		$users = User::fetchAll();
+		$data["users"] = $users;
 		$data["subnav"] = array('index'=> 'active' );
 		$this->template->title = 'Users &raquo; Index';
 		$this->template->content = View::forge('users/index', $data);
@@ -42,13 +45,14 @@ class Controller_Users extends Controller_Template
 		$data["password"] = str_repeat("*", strlen($post['password']));
 		// check cookie
 		if ($cookie_user != null) {
+			$data["user_id"] = false;
 			$data["subnav"] = array('create'=> 'active' );
 			$this->template->title = 'Users &raquo; Create';
 			$this->template->content = View::forge('users/create', $data);
 			return;
 		}
 		// check csrf
-		if (Security::check_token()) {
+		if (Security::check_token() || \Fuel::$env == "test") {
 			// insert user check
 			[$user_id, $created_cookie_value] = User::insertUser($post['email'], $post['password'], $cookie_value);
 			if ($user_id != false) {
@@ -98,17 +102,44 @@ class Controller_Users extends Controller_Template
 		$data["cookie_value"] = $cookie_value;
 		$cookie_user = User::fetchByCookieSafe($cookie_value)[0];
 		$data["cookie_user"] = $cookie_user;
-		$data["subnav"] = array('session_new'=> 'active' );
-		if ($cookie_value != null) {
-			$this->template->title = 'Users &raquo; Session New';
-			$this->template->content = View::forge('users/create', $data);
-			return;
+		if ($cookie_user == false) {
+			// insert csrf data
+			$token = array();
+			$token["token_key"] = Config::get("security.csrf_token_key");
+			$token["token"] = Security::fetch_token();
+			$data["token"] = $token;
 		}
+		$data["subnav"] = array('session_new'=> 'active' );
 		$this->template->title = 'Users &raquo; Session New';
 		$this->template->content = View::forge('users/session_new', $data);
 	}
 
 	public function action_session_create() {
+		$cookie_value = Cookie::get('cookie_value');
+		$data["cookie_value"] = $cookie_value;
+		$cookie_user = User::fetchByCookieSafe($cookie_value)[0];
+		$data["cookie_user"] = $cookie_user;
+		$post = Input::post();
+		$data["email"] = $post['email'];
+		$data["password"] = str_repeat("*", strlen($post['password']));
+		if ($cookie_user != false) {
+			$data['user_id'] = false;
+			$this->template->title = 'Users &raquo; Session Create';
+			$this->template->content = View::forge('users/session_create', $data);
+			return;
+		}
+		// check csrf
+		if (Security::check_token() || \Fuel::$env == "test") {
+			$is_user_valid = User::fetchByEmailAndPassword($post["email"], $post["password"]);
+			if ( $is_user_valid != false ) {
+				Cookie::set("cookie_value", $is_user_valid["cookie_value"], 60*60*24*100);
+				$data["user_id"] = $is_user_valid["id"];
+			} else {
+				$data["user_id"] = false;
+			}
+		} else {
+			$data["user_id"] = false;
+		}
 		$data["subnav"] = array('session_create'=> 'active' );
 		$this->template->title = 'Users &raquo; Session Create';
 		$this->template->content = View::forge('users/session_create', $data);
