@@ -67,7 +67,7 @@ return array(
             'port'      => '3306',
             'database'  => 'fueldb_twitter_test',
             'username'  => 'root',
-            'password'  => getenv()['MYSQL_ROOT_PASSWORD'],
+            'password'  => getenv()["MYSQL_ROOT_PASSWORD"],
             'persistent'=> false,
             'compress'  => false,
         ),

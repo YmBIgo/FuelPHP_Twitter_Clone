@@ -110,6 +110,17 @@ class User extends \Orm\Model
 		$result = $query->as_assoc()->execute();
 		return $result;
 	}
+	public static function fetchByEmailAndPassword($email, $password) {
+		$user = User::fetchByEmailUnsafe($email)[0];
+		if ( $user == false ) {
+			return false;
+		}
+		$user_password = \Crypt::decode($user["hashed_password"]);
+		if ( $user_password != $password ) {
+			return false;
+		}
+		return true;
+	}
 	public static function insertUser($email, $password, $cookie) {
 		$email_check = preg_match("/^([a-zA-Z0-9])+([a-zA-Z0-9\._-])*@([a-zA-Z0-9_-])+([a-zA-Z0-9\._-]+)+$/", $email);
 		if (!$email || !$email_check || strlen($password) < 8 || strlen($password) > 50 || $cookie) { return false; }
@@ -125,6 +136,48 @@ class User extends \Orm\Model
 		} else {
 			return [false, false];
 		}
+	}
+	public static function updateUserNormal($id, $cookie_value, $name, $description) {
+		$cookie_user = User::fetchByCookieSafe($cookie_value)[0];
+		if ($cookie_value == false) {
+			return false;
+		}
+		if ($cookie_user["id"] != $id) {
+			return false;
+		}
+		$user = User::find($cookie_user["id"]);
+		$user["name"] = $name;
+		$user["description"] = $description;
+		$user->save();
+		return true;
+	}
+	public static function updateUserEmail($id, $cookie_value, $email) {
+		$cookie_user = User::fetchByCookieSafe($cookie_value)[0];
+		if ($cookie_value == false) {
+			return false;
+		}
+		if ($cookie_user["id"] != $id) {
+			return false;
+		}
+		$user = User::find($cookie_user["id"]);
+		$user["email"] = $email;
+		$user->save();
+		return true;
+	}
+	public static function updateUserPassword($id, $cookie_value, $password) {
+		$cookie_user = User::fetchByCookieSafe($cookie_value)[0];
+		if ($cookie_value == false) {
+			return false;
+		}
+		if ($cookie_user["id"] != $id) {
+			return false;
+		}
+		$user = User::find($cookie_user["id"]);
+		$hashed_password = \Crypt::encode($password);
+		$user["password"] = $password;
+		$user["hashed_password"] = $hashed_password;
+		$user->save();
+		return true;
 	}
 	public static function deleteAllUsers() {
 		$query = DB::delete('users');

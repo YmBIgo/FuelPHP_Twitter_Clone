@@ -27,7 +27,7 @@ return array(
 		'connection' => array(
 			'dsn'      => 'mysql:host=localhost;dbname=fueldb_twitter_test;unix_socket=/Applications/MAMP/tmp/mysql/mysql.sock',
 			'username' => 'root',
-			'password' => getenv()['MYSQL_ROOT_PASSWORD'],
+			'password' => getenv()["MYSQL_ROOT_PASSWORD"],
 		),
 	),
 );
