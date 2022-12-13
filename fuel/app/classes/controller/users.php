@@ -92,9 +92,51 @@ class Controller_Users extends Controller_Template
 
 	public function action_edit()
 	{
+		$cookie_value = Cookie::get('cookie_value');
+		$cookie_user  = User::fetchByCookieSafe($cookie_value)[0];
+		$data["cookie_value"] = $cookie_value;
+		$data["cookie_user"] = $cookie_user;
+		if ( $cookie_user != false ) {
+			// insert csrf data
+			$token = array();
+			$token["token_key"] = Config::get("security.csrf_token_key");
+			$token["token"] = Security::fetch_token();
+			$data["token"] = $token;
+		}
 		$data["subnav"] = array('edit'=> 'active' );
 		$this->template->title = 'Users &raquo; Edit';
 		$this->template->content = View::forge('users/edit', $data);
+	}
+
+	public function action_update() {
+		$cookie_value = Cookie::get('cookie_value');
+		$cookie_user  = User::fetchByCookieSafe($cookie_value)[0];
+		$data["cookie_value"] = $cookie_value;
+		$data["cookie_user"] = $cookie_user;
+		$post = Input::post();
+		if ($cookie_user == false) {
+			$user_id = false;
+			$data["user_id"] = $user_id;
+			$data["subnav"] = array('edit'=> 'active' );
+			$this->template->title = 'Users &raquo; Update';
+			$this->template->content = View::forge('users/update', $data);
+			return;
+		}
+		// check csrf
+		if (Security::check_token() || \Fuel::$env == "test") {
+			$result = User::updateUserNormal($cookie_user["id"], $cookie_value, $post["name"], $post["description"]);
+			if ($result == false) {
+				$user_id = false;
+			} else {
+				$user_id = $cookie_user["id"];
+			}
+		} else {
+			$user_id = false;
+		}
+		$data["user_id"] = $user_id;
+		$data["subnav"] = array('edit'=> 'active' );
+		$this->template->title = 'Users &raquo; Update';
+		$this->template->content = View::forge('users/update', $data);
 	}
 
 	public function action_session_new() {
