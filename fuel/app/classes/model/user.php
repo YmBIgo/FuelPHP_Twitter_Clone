@@ -52,12 +52,12 @@ class User extends \Orm\Model
 		'Orm\Observer_CreatedAt' => array(
 			'events' => array('before_insert'),
 			'property' => 'created_at',
-			'mysql_timestamp' => false,
+			'mysql_timestamp' => true,
 		),
 		'Orm\Observer_UpdatedAt' => array(
 			'events' => array('before_update'),
 			'property' => 'updated_at',
-			'mysql_timestamp' => false,
+			'mysql_timestamp' => true,
 		),
 	);
 
@@ -81,6 +81,7 @@ class User extends \Orm\Model
 	protected static $_belongs_to = array(
 	);
 
+	// fetch
 	public static function fetchAll() {
 		$query = DB::query('SELECT * FROM users', DB::SELECT);
 		$result = $query->as_assoc()->execute();
@@ -128,6 +129,8 @@ class User extends \Orm\Model
 		}
 		return $user;
 	}
+
+	// insert
 	public static function insertUser($email, $password, $cookie, $id) {
 		$cookie_user = User::fetchByCookieAndId($cookie, $id)[0];
 		$email_check = preg_match("/^([a-zA-Z0-9])+([a-zA-Z0-9\._-])*@([a-zA-Z0-9_-])+([a-zA-Z0-9\._-]+)+$/", $email);
@@ -145,6 +148,8 @@ class User extends \Orm\Model
 			return [false, false];
 		}
 	}
+
+	// update
 	public static function updateUserNormal($id, $cookie_value, $name, $description) {
 		$cookie_user = User::fetchByCookieSafe($cookie_value)[0];
 		if ($cookie_value == false) {
@@ -191,6 +196,8 @@ class User extends \Orm\Model
 		$user->save();
 		return true;
 	}
+
+	// delete
 	public static function deleteAllUsers() {
 		$query = DB::delete('users');
 		$query->execute();

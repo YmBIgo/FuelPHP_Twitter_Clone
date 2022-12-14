@@ -39,8 +39,13 @@ return array(
 	 */
 
 	'hello(/:name)?' => array('welcome/hello', 'name' => 'hello'),
+	// users
 	'users/show(/:id)?' => array('users/show', 'name' => 'user_show'),
 	'users/edit' => array('users/edit', 'name' => 'user_edit'),
 	'users/session/new' => array('users/session_new', 'name' => 'user_session_new'),
-	'users/session/create' => array('users/session_create', 'name' => 'user_session_create')
+	'users/session/create' => array('users/session_create', 'name' => 'user_session_create'),
+	// tweets
+	'tweets/show(/:id)' => array('tweets/show', 'name' => 'tweet_show'),
+	'tweets/new' => array('tweets/new', 'name' => 'tweet_new'),
+	'tweets/create' => array('tweets/create', 'name' => 'tweet_new'),
 );

@@ -7,6 +7,8 @@ return array(
       'default' => 
       array(
         0 => '001_create_users',
+        1 => '002_create_tweets',
+        2 => '003_create_tweets_2',
       ),
     ),
     'module' => 
