@@ -5,6 +5,9 @@ class Controller_Tweets extends Controller_Template
 
 	public function action_show()
 	{
+		$params = Request::active()->params();
+		$id = $params['id'];
+		
 		$data["subnav"] = array('show'=> 'active' );
 		$this->template->title = 'Tweets &raquo; Show';
 		$this->template->content = View::forge('tweets/show', $data);

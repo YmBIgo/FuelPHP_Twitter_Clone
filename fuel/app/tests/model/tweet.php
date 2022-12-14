@@ -146,6 +146,18 @@ class Test_Model_Tweet extends TestCase {
         $this->assertSame($tweet[0]["content"], "test tweet");
         $this->assertSame($tweet[0]["user_id"], $user1_id);
     }
+    // check whether fetchById not works for invalid id
+    public function test_tweet_fetch_by_id_fail() {
+        User::deleteAllUsers();
+        Tweet::deleteAllTweets();
+        //
+        [$user1_id, $user1_cookie] = User::insertUser("hoge@hoge.com", "hogehoge", null, null);
+        $tweet_id = Tweet::insertTweet("test tweet", $user1_id, $user1_cookie);
+        $this->assertSame($tweet_id == false, false);
+        $new_tweet_id = $tweet_id + 1;
+        $tweet = Tweet::fetchById($new_tweet_id);
+        $this->assertSame($tweet[0], false);
+    }
     // check whether fetchByUserId works
     public function test_tweet_fetch_by_userid1() {
         User::deleteAllUsers();
@@ -157,6 +169,29 @@ class Test_Model_Tweet extends TestCase {
         $tweets = Tweet::fetchByUserId($user1_id);
         $this->assertSame($tweets[0]["content"], "test tweet");
         $this->assertSame($tweets[0]["user_id"], $user1_id);
+    }
+    // check whether fetchByUserId not works for no tweet user id
+    public function test_tweet_fetch_by_userid_fail1() {
+        User::deleteAllUsers();
+        Tweet::deleteAllTweets();
+        //
+        [$user1_id, $user1_cookie] = User::insertUser("hoge@hoge.com", "hogehoge", null, null);
+        [$user2_id, $user2_cookie] = User::insertUser("hoge@hoge.com", "hogehoge", null, null);
+        $tweet_id = Tweet::insertTweet("test tweet", $user1_id, $user1_cookie);
+        $this->assertSame($tweet_id == false, false);
+        $tweets = Tweet::fetchByUserId($user2_id);
+        $this->assertSame($tweets[0], false);
+    }
+    // check whether fetchByUserId not works for invalud user id
+    public function test_tweet_fetch_by_userid_fail2() {
+        User::deleteAllUsers();
+        Tweet::deleteAllTweets();
+        //
+        [$user1_id, $user1_cookie] = User::insertUser("hoge@hoge.com", "hogehoge", null, null);
+        $tweet_id = Tweet::insertTweet("test tweet", $user1_id, $user1_cookie);
+        $this->assertSame($tweet_id == false, false);
+        $tweets = Tweet::fetchByUserId($user1_id + 1);
+        $this->assertSame($tweets[0], false);
     }
 
     // < Delet check >
