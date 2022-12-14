@@ -5,4 +5,4 @@
 	<li class='<?php echo Arr::get($subnav, "create" ); ?>'><?php echo Html::anchor('tweets/create','Create');?></li>
 
 </ul>
-<p>New</p>
+<h3>Tweet New</h3>

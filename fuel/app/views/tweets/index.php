@@ -5,11 +5,13 @@
 	<li class='<?php echo Arr::get($subnav, "create" ); ?>'><?php echo Html::anchor('tweets/create','Create');?></li>
 
 </ul>
-<h3>Index</h3>
+<h3>Tweet Index</h3>
 <hr/>
 <?php foreach ($tweets as $tweet) { ?>
-	<h5><a href="/users/show/<?php echo $tweet[1]["id"] ?>"><?php echo $tweet[1]["name"] ?>さん</a>のツイート</h5>
-	<p><a href="/tweets/show/<?php echo $tweet[0]["id"] ?>"><?php echo $tweet[0]["content"] ?></a></p>
-	<hr/>
+	<div>
+		<h5><a href="/users/show/<?php echo $tweet[1]["id"] ?>"><?php echo $tweet[1]["name"] ?>さん</a>のツイート</h5>
+		<p><a href="/tweets/show/<?php echo $tweet[0]["id"] ?>"><?php echo $tweet[0]["content"] ?></a></p>
+		<hr/>
+	</div>
 <?php } ?>
 <br/>

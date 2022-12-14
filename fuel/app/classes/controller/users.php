@@ -1,6 +1,7 @@
 <?php
 
 use \Model\User;
+use \Model\Tweet;
 
 class Controller_Users extends Controller_Template
 {
@@ -15,9 +16,12 @@ class Controller_Users extends Controller_Template
 		if ( $user != false ) {
 			$data['user'] = $user;
 			$this->template->title = 'Users - '.$user['name'];
+			$tweets = Tweet::fetchByUserId($user["id"]);
+			$data["tweets"] = $tweets;
 		} else {
 			$data['user'] = null;
 			$this->template->title = "User Not Found";
+			$data["tweets"] = array();
 		}
 		$this->template->content = View::forge('users/show', $data);
 	}

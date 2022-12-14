@@ -11,8 +11,17 @@
 		<br/>
 		<small><?php echo $user["email"]; ?></small>
 	</h3>
-	<hr/>
+	<br/>
 	<p>紹介：<?php echo $user["description"]; ?></p>
+	<hr/>
+	<h4>ツイート一覧</h4>
+	<hr/>
+	<?php foreach ($tweets as $tweet){ ?>
+		<div>
+			<h5><a href="/tweets/show/<?php echo $tweet["id"] ?>"><?php echo $tweet["content"] ?></a></h5>
+			<hr/>
+		</div>
+	<?php } ?>
 <?php } else { ?>
 	<h3>ユーザーが見つかりません。</h3>
 	<hr/>
