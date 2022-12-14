@@ -42,11 +42,13 @@ class Tweet extends \Orm\Model
 			'events' => array('before_insert'),
 			'property' => 'created_at',
 			'mysql_timestamp' => true,
+			'overwrite' => true,
 		),
 		'Orm\Observer_UpdatedAt' => array(
 			'events' => array('before_update'),
 			'property' => 'updated_at',
 			'mysql_timestamp' => true,
+			'overwrite' => true,
 		),
 	);
 
