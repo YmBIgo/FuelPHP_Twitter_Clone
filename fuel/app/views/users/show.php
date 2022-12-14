@@ -16,14 +16,18 @@
 	<hr/>
 	<h4>ツイート一覧</h4>
 	<hr/>
-	<?php foreach ($tweets as $tweet){ ?>
-		<div>
-			<h5><a href="/tweets/show/<?php echo $tweet["id"] ?>"><?php echo $tweet["content"] ?></a></h5>
-			<hr/>
-		</div>
+	<?php if (count($tweets) == 0) { ?>
+		<h5>No Tweet Found...</h5>
+	<?php } else { ?>
+		<?php foreach ($tweets as $tweet){ ?>
+			<div>
+				<h5><a href="/tweets/show/<?php echo $tweet["id"] ?>"><?php echo $tweet["content"] ?></a></h5>
+				<hr/>
+			</div>
+		<?php } ?>
 	<?php } ?>
 <?php } else { ?>
-	<h3>ユーザーが見つかりません。</h3>
+	<h3>User not found...</h3>
 	<hr/>
 <?php } ?>
 <br/>

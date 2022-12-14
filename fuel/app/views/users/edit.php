@@ -9,6 +9,9 @@
 <hr/>
 <?php if($cookie_user == false) { ?>
 	<h5>You should login first to edit your user data...</h5>
+	<br/>
+	<p>Click <a href="/users/new">here</a> to signup.</p>
+	<p>Click <a href="/users/session/new">here</a> to login.</p>
 <?php } else { ?>
 	<?php echo Form::open(array("action" => "users/update", "method" => "POST")) ?>
 		<?php echo Form::label("Name", "name"); ?>

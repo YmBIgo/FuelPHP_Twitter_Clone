@@ -89,7 +89,7 @@ class Tweet extends \Orm\Model
 
 	// insert
 	public static function insertTweet($content, $user_id, $cookie) {
-		if (strlen($content) > 140) {
+		if (strlen($content) > 140 || strlen($content) == 0) {
 			return false;
 		}
 		$is_user_valid = User::fetchByCookieAndId($cookie, $user_id)[0];
