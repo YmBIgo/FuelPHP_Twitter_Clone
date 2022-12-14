@@ -4,7 +4,7 @@ use \Model\User;
 use \Model\Tweet;
 
 /**
- * Test For User Model
+ * Test For Tweet Model
  *
  * @group ModelTweet
  *
@@ -80,6 +80,18 @@ class Test_Model_Tweet extends TestCase {
         $all_tweets = Tweet::fetchAll();
         $this->assertSame(count($all_tweets), 0);
     }
+    // check whether tweet insetion not work for text 0
+    public function test_tweet_insertion6() {
+        // initialization
+        User::deleteAllUsers();
+        Tweet::deleteAllTweets();
+        [$user1_id, $user1_cookie] = User::insertUser("hoge@hoge.com", "hogehoge", null, null);
+        //
+        $tweet_id = Tweet::insertTweet("", $user1_id, $user1_cookie);
+        $this->assertSame($tweet_id, false);
+        $all_tweets = Tweet::fetchAll();
+        $this->assertSame(count($all_tweets), 0);
+    }
 
     // < Fetch All check >
     //
@@ -93,6 +105,7 @@ class Test_Model_Tweet extends TestCase {
         $this->assertSame($tweet_id == false, false);
         $all_tweets = Tweet::fetchAll();
         $this->assertSame(count($all_tweets), 1);
+        $this->assertSame($all_tweets[0]["content"], "test tweet");
     }
     // check whether fetch all works across 2 users
     public function test_tweet_fetch_all2() {
@@ -103,12 +116,15 @@ class Test_Model_Tweet extends TestCase {
         [$user2_id, $user2_cookie] = User::insertUser("hoge2@hoge.com", "hogehoge", null, null);
         $tweet1_id = Tweet::insertTweet("test tweet", $user1_id, $user1_cookie);
         $tweet2_id = Tweet::insertTweet("test tweet2", $user1_id, $user1_cookie);
-        $tweet3_id = Tweet::insertTweet("test tweet", $user2_id, $user2_cookie);
+        $tweet3_id = Tweet::insertTweet("test tweet3", $user2_id, $user2_cookie);
         $this->assertSame($tweet1_id == false, false);
         $this->assertSame($tweet2_id == false, false);
         $this->assertSame($tweet3_id == false, false);
         $all_tweets = Tweet::fetchAll();
         $this->assertSame(count($all_tweets), 3);
+        $this->assertSame($all_tweets[0]["content"], "test tweet3");
+        $this->assertSame($all_tweets[1]["content"], "test tweet2");
+        $this->assertSame($all_tweets[2]["content"], "test tweet");
     }
     // check whether fetch all works across 3 users
     public function test_tweet_fetch_all3() {
@@ -130,6 +146,8 @@ class Test_Model_Tweet extends TestCase {
         $this->assertSame($tweet5_id == false, false);
         $all_tweets = Tweet::fetchAll();
         $this->assertSame(count($all_tweets), 5);
+        $this->assertSame($all_tweets[0]["content"], "test tweet5");
+        $this->assertSame($all_tweets[2]["content"], "test tweet3");
     }
 
     // < Fetch check >

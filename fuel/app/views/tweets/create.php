@@ -6,11 +6,11 @@
 <h3>Tweet Create</h3>
 <hr/>
 <?php if($cookie_user != false) { ?>
-	<?php if ($tweet_id != false) { ?>
+	<?php if ($tweet_id == false) { ?>
+		<h5>Fail to create tweet.</h5>
+	<?php } else { ?>
 		<h5>Successfully create your tweet!</h5>
 		<p>Your tweet is <a href="/tweets/show/<?php echo $tweet_id ?>">here</a></p>
-	<?php } else { ?>
-		<h5>Fail to create tweet.</h5>
 	<?php } ?>
 <?php } else { ?>
 	<h5>You should login first to create your tweet...</h5>

@@ -18,7 +18,7 @@ class Controller_Tweets extends Controller_Template
 			$data["user"] = $user[0];
 		}
 		$data["subnav"] = array('show'=> 'active' );
-		$this->template->title = 'Tweets &raquo; Show';
+		$this->template->title = 'Tweets - Show';
 		$this->template->content = View::forge('tweets/show', $data);
 	}
 
@@ -33,7 +33,7 @@ class Controller_Tweets extends Controller_Template
 		}
 		$data["tweets"] = $tweets_with_user;
 		$data["subnav"] = array('index'=> 'active' );
-		$this->template->title = 'Tweets &raquo; Index';
+		$this->template->title = 'Tweets - Index';
 		$this->template->content = View::forge('tweets/index', $data);
 	}
 
@@ -53,7 +53,7 @@ class Controller_Tweets extends Controller_Template
 			$data["token"] = $token;
 		}
 		$data["subnav"] = array('new'=> 'active' );
-		$this->template->title = 'Tweets &raquo; New';
+		$this->template->title = 'Tweets - New';
 		$this->template->content = View::forge('tweets/new', $data);
 	}
 
@@ -61,7 +61,7 @@ class Controller_Tweets extends Controller_Template
 	{
 		$data = array();
 		$data["subnav"] = array('create'=> 'active' );
-		$this->template->title = 'Tweets &raquo; Create';
+		$this->template->title = 'Tweets - Create';
 		$cookie_value = Cookie::get('cookie_value');
 		$cookie_user_id = Cookie::get("user_id");
 		$post = Input::post();
@@ -71,7 +71,7 @@ class Controller_Tweets extends Controller_Template
 			$this->template->content = View::forge('tweets/create', $data);
 			return;
 		}
-		// check csrf
+		// check csrf || \Fuel::$env == "test"
 		if (Security::check_token() || \Fuel::$env == "test") {
 			$content = $post["content"];
 			$tweet_id = Tweet::insertTweet($content, $cookie_user_id, $cookie_value);

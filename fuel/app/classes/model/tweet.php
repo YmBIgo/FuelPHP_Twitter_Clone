@@ -70,7 +70,7 @@ class Tweet extends \Orm\Model
 
 	// fetch
 	public static function fetchAll() {
-		$query  = DB::query("SELECT * FROM tweets;", DB::SELECT);
+		$query  = DB::query("SELECT * FROM tweets ORDER BY id DESC;", DB::SELECT);
 		$result = $query->as_assoc()->execute();
 		return $result;
 	}
@@ -83,6 +83,7 @@ class Tweet extends \Orm\Model
 	public static function fetchByUserId($user_id) {
 		$query = DB::select("id", "content", "user_id", "is_reply", "is_retweet", "created_at", "updated_at")->from("tweets");
 		$query->where("user_id", $user_id);
+		$query->order_by("id", "desc");
 		$result = $query->as_assoc()->execute();
 		return $result;
 	}
