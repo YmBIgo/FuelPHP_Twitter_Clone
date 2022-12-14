@@ -110,6 +110,13 @@ class User extends \Orm\Model
 		$result = $query->as_assoc()->execute();
 		return $result;
 	}
+	public static function fetchByCookieAndId($cookie_value, $id) {
+		$query = DB::select("id", "name", "email", "description", "status")->from("users");
+		$query->where_open()->where("cookie_value", $cookie_value)->and_where("id", $id)->where_close();
+		$result = $query->as_assoc()->execute();
+		return $result;
+
+	}
 	public static function fetchByEmailAndPassword($email, $password) {
 		$user = User::fetchByEmailUnsafe($email)[0];
 		if ( $user == false ) {
@@ -121,9 +128,10 @@ class User extends \Orm\Model
 		}
 		return $user;
 	}
-	public static function insertUser($email, $password, $cookie) {
+	public static function insertUser($email, $password, $cookie, $id) {
+		$cookie_user = User::fetchByCookieAndId($cookie, $id)[0];
 		$email_check = preg_match("/^([a-zA-Z0-9])+([a-zA-Z0-9\._-])*@([a-zA-Z0-9_-])+([a-zA-Z0-9\._-]+)+$/", $email);
-		if (!$email || !$email_check || strlen($password) < 8 || strlen($password) > 50 || $cookie) { return false; }
+		if (!$email || !$email_check || strlen($password) < 8 || strlen($password) > 50 || $cookie_user != false) { return false; }
 		$user_result = User::fetchByEmailSafe($email)[0];
 		if ($user_result != false) {
 			return [false, false];
