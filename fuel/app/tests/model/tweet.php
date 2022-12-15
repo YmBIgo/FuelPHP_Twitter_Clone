@@ -381,5 +381,239 @@ class Test_Model_Tweet extends TestCase {
         $this->assertSame($tweet1_retweets[0]["content"], $original_tweet["content"]);
         $this->assertSame($tweet1_retweets[1]["content"], $original_tweet["content"]);
         $this->assertSame($tweet1_retweets[2]["content"], $original_tweet["content"]);
+        $this->assertSame($tweet1_retweets[0]["user_id"], $user3_id);
+        $this->assertSame($tweet1_retweets[1]["user_id"], $user2_id);
+        $this->assertSame($tweet1_retweets[2]["user_id"], $user1_id);
+    }
+    // <Unretweet check>
+    //
+    // check whether unretweet success
+    public function test_unretweet_success() {
+        User::deleteAllUsers();
+        Tweet::deleteAllTweets();
+        // users
+        [$user1_id, $user1_cookie] = User::insertUser("hoge@hoge.com", "hogehoge", null, null);
+        [$user2_id, $user2_cookie] = User::insertUser("hoge2@hoge.com", "hogehoge", null, null);
+        // tweets
+        $tweet1_id = Tweet::insertTweet("test tweet1", $user1_id, $user1_cookie);
+        $tweet2_id = Tweet::insertTweet("test tweet2", $user1_id, $user1_cookie);
+        $original_tweet = Tweet::fetchById($tweet1_id)[0];
+        // retweet
+        $retweet1_id = Tweet::retweetTweet($tweet1_id, $user1_id, $user1_cookie);
+        $retweet1 = Tweet::fetchById($retweet1_id)[0];
+        $this->assertSame($retweet1_id == false, false);
+        $this->assertSame($retweet1["content"], $original_tweet["content"]);
+        // unretweet
+        $unretweet_result = Tweet::unretweetTweet($retweet1_id, $user1_id, $user1_cookie);
+        $this->assertSame($unretweet_result, true);
+        $retweet1_after_unretweet = Tweet::fetchById($retweet1_id)[0];
+        $this->assertSame($retweet1_after_unretweet, false);
+    }
+    // check whether invalid cookie user fail unretweet
+    public function test_invalid_cookie_user_fail_unretweet() {
+        User::deleteAllUsers();
+        Tweet::deleteAllTweets();
+        // users
+        [$user1_id, $user1_cookie] = User::insertUser("hoge@hoge.com", "hogehoge", null, null);
+        [$user2_id, $user2_cookie] = User::insertUser("hoge2@hoge.com", "hogehoge", null, null);
+        // tweets
+        $tweet1_id = Tweet::insertTweet("test tweet1", $user1_id, $user1_cookie);
+        $tweet2_id = Tweet::insertTweet("test tweet2", $user1_id, $user1_cookie);
+        $original_tweet = Tweet::fetchById($tweet1_id)[0];
+        // retweet
+        $retweet1_id = Tweet::retweetTweet($tweet1_id, $user1_id, $user1_cookie);
+        $retweet1 = Tweet::fetchById($retweet1_id)[0];
+        $this->assertSame($retweet1_id == false, false);
+        $this->assertSame($retweet1["content"], $original_tweet["content"]);
+        // unretweet
+        $invalid_cookie = $user1_cookie."_test_fail";
+        $unretweet_result = Tweet::unretweetTweet($retweet1_id, $user1_id, $invalid_cookie);
+        $this->assertSame($unretweet_result, false);
+        $retweet1_after_unretweet = Tweet::fetchById($retweet1_id)[0];
+        $this->assertSame($retweet1_after_unretweet == false, false);
+        $this->assertSame($retweet1_after_unretweet["content"], $original_tweet["content"]);
+    }
+    // check whether invalid userid user fail unretweet
+    public function test_invalid_userid_user_fail_unretweet() {
+        User::deleteAllUsers();
+        Tweet::deleteAllTweets();
+        // users
+        [$user1_id, $user1_cookie] = User::insertUser("hoge@hoge.com", "hogehoge", null, null);
+        [$user2_id, $user2_cookie] = User::insertUser("hoge2@hoge.com", "hogehoge", null, null);
+        // tweets
+        $tweet1_id = Tweet::insertTweet("test tweet1", $user1_id, $user1_cookie);
+        $tweet2_id = Tweet::insertTweet("test tweet2", $user1_id, $user1_cookie);
+        $original_tweet = Tweet::fetchById($tweet1_id)[0];
+        // retweet
+        $retweet1_id = Tweet::retweetTweet($tweet1_id, $user1_id, $user1_cookie);
+        $retweet1 = Tweet::fetchById($retweet1_id)[0];
+        $this->assertSame($retweet1_id == false, false);
+        $this->assertSame($retweet1["content"], $original_tweet["content"]);
+        // unretweet
+        $invalid_user = $user1_id + 10;
+        $unretweet_result = Tweet::unretweetTweet($retweet1_id, $invalid_user, $user1_cookie);
+        $this->assertSame($unretweet_result, false);
+        $retweet1_after_unretweet = Tweet::fetchById($retweet1_id)[0];
+        $this->assertSame($retweet1_after_unretweet == false, false);
+        $this->assertSame($retweet1_after_unretweet["content"], $original_tweet["content"]);
+    }
+    // check whether non cookie user fail retweet
+    public function test_non_cookie_user_fail_unretweet() {
+        User::deleteAllUsers();
+        Tweet::deleteAllTweets();
+        // users
+        [$user1_id, $user1_cookie] = User::insertUser("hoge@hoge.com", "hogehoge", null, null);
+        [$user2_id, $user2_cookie] = User::insertUser("hoge2@hoge.com", "hogehoge", null, null);
+        // tweets
+        $tweet1_id = Tweet::insertTweet("test tweet1", $user1_id, $user1_cookie);
+        $tweet2_id = Tweet::insertTweet("test tweet2", $user1_id, $user1_cookie);
+        $original_tweet = Tweet::fetchById($tweet1_id)[0];
+        // retweet
+        $retweet1_id = Tweet::retweetTweet($tweet1_id, $user1_id, $user1_cookie);
+        $retweet1 = Tweet::fetchById($retweet1_id)[0];
+        $this->assertSame($retweet1_id == false, false);
+        $this->assertSame($retweet1["content"], $original_tweet["content"]);
+        // unretweet
+        $invalid_user = $user1_id + 10;
+        $unretweet_result = Tweet::unretweetTweet($retweet1_id, null, null);
+        $this->assertSame($unretweet_result, false);
+        $retweet1_after_unretweet = Tweet::fetchById($retweet1_id)[0];
+        $this->assertSame($retweet1_after_unretweet == false, false);
+        $this->assertSame($retweet1_after_unretweet["content"], $original_tweet["content"]);
+    }
+    // check whether non exist retweet cannot unretweet
+    public function test_non_exist_tweet_cannot_unretweet() {
+        User::deleteAllUsers();
+        Tweet::deleteAllTweets();
+        // users
+        [$user1_id, $user1_cookie] = User::insertUser("hoge@hoge.com", "hogehoge", null, null);
+        [$user2_id, $user2_cookie] = User::insertUser("hoge2@hoge.com", "hogehoge", null, null);
+        // tweets
+        $tweet1_id = Tweet::insertTweet("test tweet1", $user1_id, $user1_cookie);
+        $tweet2_id = Tweet::insertTweet("test tweet2", $user1_id, $user1_cookie);
+        $original_tweet = Tweet::fetchById($tweet1_id)[0];
+        // retweet
+        $retweet1_id = Tweet::retweetTweet($tweet1_id, $user1_id, $user1_cookie);
+        $retweet1 = Tweet::fetchById($retweet1_id)[0];
+        $this->assertSame($retweet1_id == false, false);
+        $this->assertSame($retweet1["content"], $original_tweet["content"]);
+        // unretweet
+        $invalid_retweet1_id = $retweet1_id + 1;
+        $unretweet_result = Tweet::unretweetTweet($invalid_retweet1_id, $user1_id, $user1_cookie);
+        $this->assertSame($unretweet_result, false);
+        $retweet1_after_unretweet = Tweet::fetchById($retweet1_id)[0];
+        $this->assertSame($retweet1_after_unretweet == false, false);
+        $this->assertSame($retweet1_after_unretweet["content"], $original_tweet["content"]);
+    }
+    // check whether normal tweet cannot unretweet
+    public function test_normal_tweet_cannot_unretweet() {
+        User::deleteAllUsers();
+        Tweet::deleteAllTweets();
+        // users
+        [$user1_id, $user1_cookie] = User::insertUser("hoge@hoge.com", "hogehoge", null, null);
+        [$user2_id, $user2_cookie] = User::insertUser("hoge2@hoge.com", "hogehoge", null, null);
+        // tweets
+        $tweet1_id = Tweet::insertTweet("test tweet1", $user1_id, $user1_cookie);
+        $tweet2_id = Tweet::insertTweet("test tweet2", $user1_id, $user1_cookie);
+        $original_tweet = Tweet::fetchById($tweet1_id)[0];
+        // retweet
+        $retweet1_id = Tweet::retweetTweet($tweet1_id, $user1_id, $user1_cookie);
+        $retweet1 = Tweet::fetchById($retweet1_id)[0];
+        $this->assertSame($retweet1_id == false, false);
+        $this->assertSame($retweet1["content"], $original_tweet["content"]);
+        // unretweet
+        $invalid_retweet1_id = $retweet1_id + 1;
+        $unretweet_result = Tweet::unretweetTweet($tweet2_id, $user1_id, $user1_cookie);
+        $this->assertSame($unretweet_result, false);
+        $retweet1_after_unretweet = Tweet::fetchById($retweet1_id)[0];
+        $this->assertSame($retweet1_after_unretweet == false, false);
+        $this->assertSame($retweet1_after_unretweet["content"], $original_tweet["content"]);
+    }
+    // check whether not your retweet cannot unretweet
+    public function test_not_your_retweet_cannot_unretweet() {
+        User::deleteAllUsers();
+        Tweet::deleteAllTweets();
+        // users
+        [$user1_id, $user1_cookie] = User::insertUser("hoge@hoge.com", "hogehoge", null, null);
+        [$user2_id, $user2_cookie] = User::insertUser("hoge2@hoge.com", "hogehoge", null, null);
+        // tweets
+        $tweet1_id = Tweet::insertTweet("test tweet1", $user1_id, $user1_cookie);
+        $tweet2_id = Tweet::insertTweet("test tweet2", $user1_id, $user1_cookie);
+        $original_tweet = Tweet::fetchById($tweet1_id)[0];
+        $original_tweet2 = Tweet::fetchById($tweet2_id)[0];
+        // retweet
+        $retweet1_id = Tweet::retweetTweet($tweet1_id, $user1_id, $user1_cookie);
+        $retweet1 = Tweet::fetchById($retweet1_id)[0];
+        $this->assertSame($retweet1_id == false, false);
+        $this->assertSame($retweet1["content"], $original_tweet["content"]);
+        $retweet2_id = Tweet::retweetTweet($tweet2_id, $user2_id, $user2_cookie);
+        $retweet2 = Tweet::fetchById($retweet2_id)[0];
+        $this->assertSame($retweet2_id == false, false);
+        $this->assertSame($retweet2["content"], $original_tweet2["content"]);
+        // unretweet
+        $invalid_retweet1_id = $retweet1_id + 1;
+        $unretweet_result = Tweet::unretweetTweet($tweet1_id, $user2_id, $user2_cookie);
+        $this->assertSame($unretweet_result, false);
+        $retweet1_after_unretweet = Tweet::fetchById($retweet1_id)[0];
+        $this->assertSame($retweet1_after_unretweet == false, false);
+        $this->assertSame($retweet1_after_unretweet["content"], $original_tweet["content"]);
+    }
+    // check whether already unretweet tweet cannot unretweet
+    public function test_already_unretweet_tweet_cannot_unretweet() {
+        User::deleteAllUsers();
+        Tweet::deleteAllTweets();
+        // users
+        [$user1_id, $user1_cookie] = User::insertUser("hoge@hoge.com", "hogehoge", null, null);
+        [$user2_id, $user2_cookie] = User::insertUser("hoge2@hoge.com", "hogehoge", null, null);
+        // tweets
+        $tweet1_id = Tweet::insertTweet("test tweet1", $user1_id, $user1_cookie);
+        $tweet2_id = Tweet::insertTweet("test tweet2", $user1_id, $user1_cookie);
+        $original_tweet = Tweet::fetchById($tweet1_id)[0];
+        // retweet
+        $retweet1_id = Tweet::retweetTweet($tweet1_id, $user1_id, $user1_cookie);
+        $retweet1 = Tweet::fetchById($retweet1_id)[0];
+        $this->assertSame($retweet1_id == false, false);
+        $this->assertSame($retweet1["content"], $original_tweet["content"]);
+        // unretweet
+        $invalid_retweet1_id = $retweet1_id + 1;
+        $unretweet_result = Tweet::unretweetTweet($retweet1_id, $user1_id, $user1_cookie);
+        $this->assertSame($unretweet_result, true);
+        $retweet1_after_unretweet = Tweet::fetchById($retweet1_id)[0];
+        $this->assertSame($retweet1_after_unretweet, false);
+        $unretweet_result2 = Tweet::unretweetTweet($retweet1_id, $user1_id, $user1_cookie);
+        $this->assertSame($unretweet_result2, false);
+    }
+    // check for untweet after 3 people retweet 
+    public function test_for_unretweet_after_3people_retweet() {
+        User::deleteAllUsers();
+        Tweet::deleteAllTweets();
+        // users
+        [$user1_id, $user1_cookie] = User::insertUser("hoge@hoge.com", "hogehoge", null, null);
+        [$user2_id, $user2_cookie] = User::insertUser("hoge2@hoge.com", "hogehoge", null, null);
+        [$user3_id, $user3_cookie] = User::insertUser("hoge3@hoge.com", "hogehoge", null, null);
+        // tweets
+        $tweet1_id = Tweet::insertTweet("test tweet1", $user1_id, $user1_cookie);
+        $tweet2_id = Tweet::insertTweet("test tweet2", $user1_id, $user1_cookie);
+        $original_tweet = Tweet::fetchById($tweet1_id)[0];
+        // retweet
+        $retweet1_id = Tweet::retweetTweet($tweet1_id, $user1_id, $user1_cookie);
+        $retweet1 = Tweet::fetchById($retweet1_id)[0];
+        $this->assertSame($retweet1_id == false, false);
+        $this->assertSame($retweet1["content"], $original_tweet["content"]);
+        $retweet2_id = Tweet::retweetTweet($tweet1_id, $user2_id, $user2_cookie);
+        $retweet2 = Tweet::fetchById($retweet2_id)[0];
+        $this->assertSame($retweet2_id == false, false);
+        $this->assertSame($retweet2["content"], $original_tweet["content"]);
+        $retweet3_id = Tweet::retweetTweet($tweet1_id, $user3_id, $user3_cookie);
+        $retweet3 = Tweet::fetchById($retweet3_id)[0];
+        $this->assertSame($retweet3_id == false, false);
+        $this->assertSame($retweet3["content"], $original_tweet["content"]);
+        // unretweet
+        $unretweet1_result = Tweet::unretweetTweet($retweet1_id, $user1_id, $user1_cookie);
+        $this->assertSame($unretweet1_result == false, false);
+        $retweets = Tweet::fetchRetweetByTweetId($tweet1_id);
+        $this->assertSame(count($retweets), 2);
+        $this->assertSame($retweets[0]["user_id"], $user3_id);
+        $this->assertSame($retweets[1]["user_id"], $user2_id);
     }
 }

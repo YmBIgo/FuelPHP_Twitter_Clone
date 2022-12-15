@@ -98,6 +98,7 @@ class Tweet extends \Orm\Model
 	public static function fetchRetweetByTweetId($tweet_id) {
 		$query = DB::select("id", "content", "user_id", "is_reply", "is_retweet", "created_at", "updated_at")->from("tweets");
 		$query->where("is_retweet", $tweet_id);
+		$query->order_by("id", "desc");
 		$result = $query->as_assoc()->execute();
 		return $result;
 	}
@@ -157,6 +158,7 @@ class Tweet extends \Orm\Model
 		$query = DB::delete("tweets");
 		$query->where_open()->where("id", $retweet_id)->and_where("user_id", $user_id)->where_close();
 		$query->execute();
+		return true;
 	}
 
 	// delete
