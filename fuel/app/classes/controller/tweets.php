@@ -82,4 +82,12 @@ class Controller_Tweets extends Controller_Template
 		$this->template->content = View::forge('tweets/create', $data);
 	}
 
+	public function action_retweet() {
+
+	}
+
+	public function action_unretweet() {
+
+	}
+
 }

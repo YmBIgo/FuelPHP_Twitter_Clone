@@ -48,4 +48,6 @@ return array(
 	'tweets/show(/:id)' => array('tweets/show', 'name' => 'tweet_show'),
 	'tweets/new' => array('tweets/new', 'name' => 'tweet_new'),
 	'tweets/create' => array('tweets/create', 'name' => 'tweet_new'),
+	'tweets/retweet(/:id)' => array('tweets/retweet', 'name' => 'tweet_retweet'),
+	'tweets/unretweet(/:id)' => array('tweets/unretweet', 'name' => 'tweet_unretweet')
 );

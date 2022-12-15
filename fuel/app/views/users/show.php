@@ -8,6 +8,9 @@
 <?php if ($user != null){ ?>
 	<h3>
 		<?php echo $user["name"]; ?>さん
+		<?php if ($cookie_user != false && $user["id"] == $cookie_user["id"]) { ?>
+			<a href="/users/edit" class="btn btn-success">ユーザー情報を編集する</a>
+		<?php } ?>
 		<br/>
 		<small><?php echo $user["email"]; ?></small>
 	</h3>

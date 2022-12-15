@@ -87,6 +87,20 @@ class Tweet extends \Orm\Model
 		$result = $query->as_assoc()->execute();
 		return $result;
 	}
+	// get retweet by retweet tweet id and user id
+	public static function fetchRetweetByTweetIdAndUserId($tweet_id, $user_id) {
+		$query = DB::select("id", "content", "user_id", "is_reply", "is_retweet", "created_at", "updated_at")->from("tweets");
+		$query->where_open()->where("is_retweet", $tweet_id)->and_where("user_id", $user_id)->where_close();
+		$result = $query->as_assoc()->execute();
+		return $result;
+	}
+	// get retweet by retweet tweet id
+	public static function fetchRetweetByTweetId($tweet_id) {
+		$query = DB::select("id", "content", "user_id", "is_reply", "is_retweet", "created_at", "updated_at")->from("tweets");
+		$query->where("is_retweet", $tweet_id);
+		$result = $query->as_assoc()->execute();
+		return $result;
+	}
 
 	// insert
 	public static function insertTweet($content, $user_id, $cookie) {
@@ -103,6 +117,46 @@ class Tweet extends \Orm\Model
 		} else {
 			return false;
 		}
+	}
+	// retweet
+	public static function retweetTweet($tweet_id, $user_id, $cookie) {
+		$is_user_valid = User::fetchByCookieAndId($cookie, $user_id)[0];
+		if ($is_user_valid == false) {
+			return false;
+		}
+		$original_tweet = Tweet::fetchById($tweet_id)[0];
+		if ($original_tweet == false) {
+			return false;
+		}
+		$is_retweet_exist = Tweet::fetchRetweetByTweetIdAndUserId($tweet_id, $is_user_valid["id"])[0];
+		if ($is_retweet_exist != false) {
+			return false;
+		}
+		$user_id = $is_user_valid["id"];
+		list($insert_id, $rows_affected) = DB::insert("tweets")->columns(array("user_id", "content", "is_reply", "is_retweet"))->values(array($user_id, $original_tweet["content"], 0, $tweet_id))->execute();
+		if ($rows_affected > 0) {
+			return $insert_id;
+		} else {
+			return false;
+		}
+	}
+	// unretweet
+	//   -> implement using retweet id is valid ? or just using original tweet id.
+	public static function unretweetTweet($retweet_id, $user_id, $cookie) {
+		$is_user_valid = User::fetchByCookieAndId($cookie, $user_id)[0];
+		if ($is_user_valid == false) {
+			return false;
+		}
+		$original_tweet = Tweet::fetchById($retweet_id)[0];
+		if ($original_tweet == false) {
+			return false;
+		}
+		if ($original_tweet["is_retweet"] == 0) {
+			return false;
+		}
+		$query = DB::delete("tweets");
+		$query->where_open()->where("id", $retweet_id)->and_where("user_id", $user_id)->where_close();
+		$query->execute();
 	}
 
 	// delete

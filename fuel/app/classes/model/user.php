@@ -55,9 +55,9 @@ class User extends \Orm\Model
 			'mysql_timestamp' => true,
 		),
 		'Orm\Observer_UpdatedAt' => array(
-			'events' => array('before_update'),
+			'events' => array('before_save'),
 			'property' => 'updated_at',
-			'mysql_timestamp' => true,
+			'mysql_timestamp' => false,
 		),
 	);
 

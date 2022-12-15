@@ -18,6 +18,11 @@ class Controller_Users extends Controller_Template
 			$this->template->title = 'Users - '.$user['name'];
 			$tweets = Tweet::fetchByUserId($user["id"]);
 			$data["tweets"] = $tweets;
+			// 
+			$cookie_value = Cookie::get('cookie_value');
+			$cookie_user_id = Cookie::get("user_id");
+			$cookie_user  = User::fetchByCookieAndId($cookie_value, $cookie_user_id)[0];
+			$data["cookie_user"] = $cookie_user;
 		} else {
 			$data['user'] = null;
 			$this->template->title = "User Not Found";
