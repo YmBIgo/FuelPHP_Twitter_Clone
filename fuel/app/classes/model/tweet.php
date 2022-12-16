@@ -74,6 +74,12 @@ class Tweet extends \Orm\Model
 		$result = $query->as_assoc()->execute();
 		return $result;
 	}
+	public static function fetchTimeline() {
+		$query = DB::select("id", "content", "user_id", "is_reply", "is_retweet", "created_at", "updated_at")->from("tweets");
+		$query->where_open()->where("is_reply", 0)->where_close();
+		$result = $query->as_assoc()->execute();
+		return $result;
+	}
 	public static function fetchById($id) {
 		$query = DB::select("id", "content", "user_id", "is_reply", "is_retweet", "created_at", "updated_at")->from("tweets");
 		$query->where("id", $id);
@@ -99,6 +105,14 @@ class Tweet extends \Orm\Model
 		$query = DB::select("id", "content", "user_id", "is_reply", "is_retweet", "created_at", "updated_at")->from("tweets");
 		$query->where("is_retweet", $tweet_id);
 		$query->order_by("id", "desc");
+		$result = $query->as_assoc()->execute();
+		return $result;
+	}
+	// get reply by tweet id
+	public static function fetchReplyByTweetId($tweet_id) {
+		$query = DB::select("id", "content", "user_id", "is_reply", "is_retweet", "created_at", "updated_at")->from("tweets");
+		$query->where("is_reply", $tweet_id);
+		$query->order_by("id", "asc");
 		$result = $query->as_assoc()->execute();
 		return $result;
 	}
@@ -135,6 +149,33 @@ class Tweet extends \Orm\Model
 		}
 		$user_id = $is_user_valid["id"];
 		list($insert_id, $rows_affected) = DB::insert("tweets")->columns(array("user_id", "content", "is_reply", "is_retweet"))->values(array($user_id, $original_tweet["content"], 0, $tweet_id))->execute();
+		if ($rows_affected > 0) {
+			return $insert_id;
+		} else {
+			return false;
+		}
+	}
+	// reply
+	public static function replyTweet($tweet_id, $content, $user_id, $cookie) {
+		if ( strlen($content) > 140 || strlen($content) == 0 ) {
+			return false;
+		}
+		$is_user_valid = User::fetchByCookieAndId($cookie, $user_id)[0];
+		if ($is_user_valid == false) {
+			return false;
+		}
+		$original_tweet = Tweet::fetchById($tweet_id)[0];
+		if ($original_tweet == false) {
+			return false;
+		}
+		// not only root tweet is replyable.
+		/*
+		if ($original_tweet["is_reply"] != 0) {
+			return false;
+		}
+		*/
+		$user_id = $is_user_valid["id"];
+		list ($insert_id, $rows_affected) = DB::insert("tweets")->columns(array("user_id", "content", "is_reply", "is_retweet"))->values(array($user_id, $content, $tweet_id, 0))->execute();
 		if ($rows_affected > 0) {
 			return $insert_id;
 		} else {

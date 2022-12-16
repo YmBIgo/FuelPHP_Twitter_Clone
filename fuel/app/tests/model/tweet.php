@@ -385,6 +385,7 @@ class Test_Model_Tweet extends TestCase {
         $this->assertSame($tweet1_retweets[1]["user_id"], $user2_id);
         $this->assertSame($tweet1_retweets[2]["user_id"], $user1_id);
     }
+
     // <Unretweet check>
     //
     // check whether unretweet success
@@ -615,5 +616,219 @@ class Test_Model_Tweet extends TestCase {
         $this->assertSame(count($retweets), 2);
         $this->assertSame($retweets[0]["user_id"], $user3_id);
         $this->assertSame($retweets[1]["user_id"], $user2_id);
+    }
+
+    // < Reply check > 
+    //
+    // check whether success reply
+    public function test_reply_success1() {
+        User::deleteAllUsers();
+        Tweet::deleteAllTweets();
+        // users
+        [$user1_id, $user1_cookie] = User::insertUser("hoge@hoge.com", "hogehoge", null, null);
+        // tweets
+        $tweet1_id = Tweet::insertTweet("test tweet1", $user1_id, $user1_cookie);
+        // reply
+        $reply_tweet_id = Tweet::replyTweet($tweet1_id, "test reply1", $user1_id, $user1_cookie);
+        $this->assertSame($reply_tweet_id == false, false);
+        // fetch tweet data
+        $reply_tweet = Tweet::fetchById($reply_tweet_id)[0];
+        $this->assertSame($reply_tweet["content"], "test reply1");
+        $this->assertSame($reply_tweet["user_id"], $user1_id);
+        // fetch from fetchReplyByTweetId
+        $reply_tweets = Tweet::fetchReplyByTweetId($tweet1_id);
+        $this->assertSame($reply_tweets[0]["content"], "test reply1");
+        $this->assertSame($reply_tweets[0]["user_id"], $user1_id);
+        $this->assertSame($reply_tweet["id"], $reply_tweets[0]["id"]);
+    }
+    // check whether invalid cookie user fail reply
+    public function test_reply_fail1_for_invalid_cookie_user() {
+        User::deleteAllUsers();
+        Tweet::deleteAllTweets();
+        // users
+        [$user1_id, $user1_cookie] = User::insertUser("hoge@hoge.com", "hogehoge", null, null);
+        $invalid_cookie = $user1_cookie."_test_fail";
+        // tweets
+        $tweet1_id = Tweet::insertTweet("test tweet1", $user1_id, $user1_cookie);
+        // reply
+        $reply_tweet_id = Tweet::replyTweet($tweet1_id, "test reply1", $user1_id, $invalid_cookie);
+        $this->assertSame($reply_tweet_id, false);
+        // fetch from fetchReplyByTweetId
+        $reply_tweets = Tweet::fetchReplyByTweetId($tweet1_id);
+        $this->assertSame(count($reply_tweets), 0);
+        // fetch all
+        $all_tweets = Tweet::fetchAll();
+        $this->assertSame(count($all_tweets), 1);
+    }
+    // check whether invalid userid user fail reply
+    public function test_reply_fail2_for_invalid_userid_user() {
+        User::deleteAllUsers();
+        Tweet::deleteAllTweets();
+        // users
+        [$user1_id, $user1_cookie] = User::insertUser("hoge@hoge.com", "hogehoge", null, null);
+        $invalid_userid = $user1_id + 10;
+        // tweets
+        $tweet1_id = Tweet::insertTweet("test tweet1", $user1_id, $user1_cookie);
+        // reply
+        $reply_tweet_id = Tweet::replyTweet($tweet1_id, "test reply1", $invalid_userid, $user1_cookie);
+        $this->assertSame($reply_tweet_id, false);
+        // fetch from fetchReplyByTweetId
+        $reply_tweets = Tweet::fetchReplyByTweetId($tweet1_id);
+        $this->assertSame(count($reply_tweets), 0);
+        // fetch all
+        $all_tweets = Tweet::fetchAll();
+        $this->assertSame(count($all_tweets), 1);
+    }
+    // check whether non cookie user fail reply
+    public function test_reply_fail3_for_non_cookie_user() {
+        User::deleteAllUsers();
+        Tweet::deleteAllTweets();
+        // users
+        [$user1_id, $user1_cookie] = User::insertUser("hoge@hoge.com", "hogehoge", null, null);
+        // tweets
+        $tweet1_id = Tweet::insertTweet("test tweet1", $user1_id, $user1_cookie);
+        // reply
+        $reply_tweet_id = Tweet::replyTweet($tweet1_id, "test reply1", null, null);
+        $this->assertSame($reply_tweet_id, false);
+        // fetch from fetchReplyByTweetId
+        $reply_tweets = Tweet::fetchReplyByTweetId($tweet1_id);
+        $this->assertSame(count($reply_tweets), 0);
+        // fetch all
+        $all_tweets = Tweet::fetchAll();
+        $this->assertSame(count($all_tweets), 1);
+    }
+    // check whether non exist tweet cannot reply
+    public function test_reply_fail4_for_non_exists_tweet() {
+        User::deleteAllUsers();
+        Tweet::deleteAllTweets();
+        // users
+        [$user1_id, $user1_cookie] = User::insertUser("hoge@hoge.com", "hogehoge", null, null);
+        // tweets
+        $tweet1_id = Tweet::insertTweet("test tweet1", $user1_id, $user1_cookie);
+        $invalid_tweet_id = $tweet1_id + 10;
+        // reply
+        $reply_tweet_id = Tweet::replyTweet($invalid_tweet_id, "test reply1", $user1_id, $user1_cookie);
+        $this->assertSame($reply_tweet_id, false);
+        // fetch from fetchReplyByTweetId
+        $reply_tweets = Tweet::fetchReplyByTweetId($tweet1_id);
+        $this->assertSame(count($reply_tweets), 0);
+        // fetch all
+        $all_tweets = Tweet::fetchAll();
+        $this->assertSame(count($all_tweets), 1);
+    }
+    // check whether longer than 140 reply fail
+    public function test_reply_longer_than140_fail() {
+        User::deleteAllUsers();
+        Tweet::deleteAllTweets();
+        // users
+        [$user1_id, $user1_cookie] = User::insertUser("hoge@hoge.com", "hogehoge", null, null);
+        // tweets
+        $tweet1_id = Tweet::insertTweet("test tweet1", $user1_id, $user1_cookie);
+        // reply
+        $reply_tweet_id = Tweet::replyTweet($tweet1_id, "test replytest replytest replytest replytest replytest replytest replytest replytest replytest replytest replytest replytest replytest reply1", $user1_id, $user1_cookie);
+        $this->assertSame($reply_tweet_id, false);
+        // fetch from fetchReplyByTweetId
+        $reply_tweets = Tweet::fetchReplyByTweetId($tweet1_id);
+        $this->assertSame(count($reply_tweets), 0);
+        // fetch all
+        $all_tweets = Tweet::fetchAll();
+        $this->assertSame(count($all_tweets), 1);
+    }
+    // check whether blank reply fail
+    public function test_reply_blank_fail() {
+        User::deleteAllUsers();
+        Tweet::deleteAllTweets();
+        // users
+        [$user1_id, $user1_cookie] = User::insertUser("hoge@hoge.com", "hogehoge", null, null);
+        // tweets
+        $tweet1_id = Tweet::insertTweet("test tweet1", $user1_id, $user1_cookie);
+        // reply
+        $reply_tweet_id = Tweet::replyTweet($tweet1_id, "", $user1_id, $user1_cookie);
+        $this->assertSame($reply_tweet_id, false);
+        // fetch from fetchReplyByTweetId
+        $reply_tweets = Tweet::fetchReplyByTweetId($tweet1_id);
+        $this->assertSame(count($reply_tweets), 0);
+        // fetch all
+        $all_tweets = Tweet::fetchAll();
+        $this->assertSame(count($all_tweets), 1);
+    }
+    // check whether reply is replyable
+    public function test_reply_success2_for_reply_reply() {
+        User::deleteAllUsers();
+        Tweet::deleteAllTweets();
+        // users
+        [$user1_id, $user1_cookie] = User::insertUser("hoge@hoge.com", "hogehoge", null, null);
+        // tweets
+        $tweet1_id = Tweet::insertTweet("test tweet1", $user1_id, $user1_cookie);
+        // reply
+        $reply_tweet1_id = Tweet::replyTweet($tweet1_id, "test reply1", $user1_id, $user1_cookie);
+        $this->assertSame($reply_tweet1_id == false, false);
+        $reply_tweet2_id = Tweet::replyTweet($reply_tweet1_id, "test reply1", $user1_id, $user1_cookie);
+        $this->assertSame($reply_tweet2_id == false, false);
+        // fetch from fetchReplyByTweetId
+        $reply_tweets = Tweet::fetchReplyByTweetId($tweet1_id);
+        $this->assertSame(count($reply_tweets), 1);
+        $reply_tweets = Tweet::fetchReplyByTweetId($reply_tweet1_id);
+        $this->assertSame(count($reply_tweets), 1);
+        // fetch all
+        $all_tweets = Tweet::fetchAll();
+        $this->assertSame(count($all_tweets), 3);
+        $this->assertSame($all_tweets[0]["is_reply"], $reply_tweet1_id);
+        $this->assertSame($all_tweets[1]["is_reply"], $tweet1_id);
+        $this->assertSame((int)$all_tweets[2]["is_reply"], 0);
+    }
+    // check whether retweet is replyable
+    public function test_reply_success3_for_retweet_reply() {
+        User::deleteAllUsers();
+        Tweet::deleteAllTweets();
+        // users
+        [$user1_id, $user1_cookie] = User::insertUser("hoge@hoge.com", "hogehoge", null, null);
+        // tweets
+        $tweet1_id = Tweet::insertTweet("test tweet1", $user1_id, $user1_cookie);
+        // retweet
+        $retweet_id = Tweet::retweetTweet($tweet1_id, $user1_id, $user1_cookie);
+        // reply
+        $reply_tweet1_id = Tweet::replyTweet($retweet_id, "test reply1", $user1_id, $user1_cookie);
+        $this->assertSame($reply_tweet1_id == false, false);
+        // fetch from fetchReplyByTweetId
+        $reply_tweets = Tweet::fetchReplyByTweetId($retweet_id);
+        $this->assertSame(count($reply_tweets), 1);
+        // fetch all
+        $all_tweets = Tweet::fetchAll();
+        $this->assertSame(count($all_tweets), 3);
+        $this->assertSame($all_tweets[0]["is_reply"], $retweet_id);
+        $this->assertSame((int)$all_tweets[1]["is_reply"], 0);
+        $this->assertSame((int)$all_tweets[2]["is_reply"], 0);
+    }
+    // check 2 people reply work
+    public function test_reply_success4_for_2people() {
+        User::deleteAllUsers();
+        Tweet::deleteAllTweets();
+        // users
+        [$user1_id, $user1_cookie] = User::insertUser("hoge@hoge.com", "hogehoge", null, null);
+        [$user2_id, $user2_cookie] = User::insertUser("hoge2@hoge.com", "hogehoge", null, null);
+        // tweets
+        $tweet1_id = Tweet::insertTweet("test tweet1", $user1_id, $user1_cookie);
+        $tweet2_id = Tweet::insertTweet("test tweet1", $user2_id, $user2_cookie);
+        // reply 1 & 2
+        $reply_tweet1_id = Tweet::replyTweet($tweet1_id, "test reply1", $user1_id, $user1_cookie);
+        $this->assertSame($reply_tweet1_id == false, false);
+        $reply_tweet1_id = Tweet::replyTweet($tweet1_id, "test reply1", $user2_id, $user2_cookie);
+        $this->assertSame($reply_tweet1_id == false, false);
+        // fetch from fetchReplyByTweetId
+        $reply_tweets = Tweet::fetchReplyByTweetId($tweet1_id);
+        $this->assertSame(count($reply_tweets), 2);
+        // fetch all
+        $all_tweets = Tweet::fetchAll();
+        $this->assertSame(count($all_tweets), 4);
+        $this->assertSame($all_tweets[0]["is_reply"], $tweet1_id);
+        $this->assertSame($all_tweets[1]["is_reply"], $tweet1_id);
+        $this->assertSame((int)$all_tweets[2]["is_reply"], 0);
+        $this->assertSame((int)$all_tweets[3]["is_reply"], 0);
+        // fetch timeline
+        $timeline_tweets = Tweet::fetchTimeline();
+        $this->assertSame(count($timeline_tweets), 2);
+        $this->assertSame((int)$timeline_tweets[0]["is_reply"], 0);
+        $this->assertSame((int)$timeline_tweets[1]["is_reply"], 0);
     }
 }
