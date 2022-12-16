@@ -16,13 +16,32 @@ class Controller_Users extends Controller_Template
 		if ( $user != false ) {
 			$data['user'] = $user;
 			$this->template->title = 'Users - '.$user['name'];
-			$tweets = Tweet::fetchByUserId($user["id"]);
-			$data["tweets"] = $tweets;
-			// 
+			//
 			$cookie_value = Cookie::get('cookie_value');
 			$cookie_user_id = Cookie::get("user_id");
 			$cookie_user  = User::fetchByCookieAndId($cookie_value, $cookie_user_id)[0];
 			$data["cookie_user"] = $cookie_user;
+			//
+			$tweets = Tweet::fetchByUserId($user["id"]);
+			$retweet_append_tweets = array();
+			//
+			if ( $cookie_user != false ) {
+				foreach ($tweets as $tweet) {
+					$is_current_user_retweet = Tweet::fetchRetweetByTweetIdAndUserId($tweet["id"], $cookie_user["id"])[0];
+					array_push($retweet_append_tweets, [$tweet, $is_current_user_retweet]);
+				}
+				$token = array();
+				$token['token_key'] = Config::get('security.csrf_token_key');
+				$token['token'] = Security::fetch_token();
+				$data["token"] = $token;
+			} else {
+				foreach ($tweets as $tweet) {
+					array_push($retweet_append_tweets, [$tweet, false]);
+				}
+			}
+			//
+			$data["tweets"] = $retweet_append_tweets;
+			// 
 		} else {
 			$data['user'] = null;
 			$this->template->title = "User Not Found";
