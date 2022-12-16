@@ -4,6 +4,7 @@
 	<meta charset="utf-8"/>
 	<title><?php echo $title; ?></title>
 	<?php echo Asset::css('bootstrap.css'); ?>
+	<?php echo Asset::css('index.css'); ?>
 	<style>
 		body { margin: 40px; }
 	</style>

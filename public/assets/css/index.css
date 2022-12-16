@@ -1,0 +1,9 @@
+.tweet_card {
+	border:1px solid rgba(100, 100, 100, .4);
+	border-radius:10px;
+	padding:10px;
+	margin-bottom:10px;
+}
+.twitter-card-reply-area {
+	margin-top:20px;
+}

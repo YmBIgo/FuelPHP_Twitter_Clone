@@ -24,6 +24,9 @@
 	<?php } else { ?>
 		<?php foreach ($tweets as $tweet){ ?>
 			<div>
+				<?php if ($tweet["is_retweet"] != 0) { ?>
+					<p><small>[ Retweet Tweet ] <a href="/tweets/show/<?php echo $tweet["is_retweet"] ?>">original tweet</a></small></p>
+				<?php } ?>
 				<h5><a href="/tweets/show/<?php echo $tweet["id"] ?>"><?php echo $tweet["content"] ?></a></h5>
 				<hr/>
 			</div>
