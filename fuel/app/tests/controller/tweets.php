@@ -715,4 +715,239 @@ class Test_Controller_Tweet extends TestCase {
         $third_tweet_retweet = $timeline_tweet[2]["div"]["div"][1]["form"]["input"][1]["@attributes"]["value"];
         $this->assertSame($third_tweet_retweet, "Retweet");
     }
+
+    // retweet
+    //
+    // You should startup test server by [ env FUEL_ENV=test php -S localhost:8081 ] @./public before running these tests.
+
+    // check whether unretweet success
+    //  -> should check @tweets/index most recent tweet & original tweet retweet button 
+    public function test_unretweet_status_and_success_at_tweet_show() {
+        // initialization
+        User::deleteAllUsers();
+        Tweet::deleteAllTweets();
+        [$user1_id, $user1_cookie] = User::insertUser("hoge12@hoge.com", "hogehoge", null, null);
+        $tweet_id = Tweet::insertTweet("test tweet1", $user1_id, $user1_cookie);
+        // setting
+        $cookie = array();
+        $cookie["cookie_value"] = $user1_cookie;
+        $cookie["user_id"] = $user1_id;
+        // post /tweets/retweet/:id 
+        $request_url = "http://localhost:8081/tweets/retweet/".$tweet_id;
+        $request = Request::forge($request_url, "curl")->set_method("POST");
+        $request->set_option(CURLOPT_COOKIE, build_cookie($cookie));
+        $response = $request->execute()->response();
+        // get /tweets/index
+        $request_url2 = "http://localhost:8081/tweets/index";
+        $request2 = Request::forge($request_url2, "curl")->set_method("GET");
+        $request2->set_option(CURLOPT_COOKIE, build_cookie($cookie));
+        $response2 = $request2->execute()->response();
+        $array_body2 = Format::forge($response2->body, "xml")->to_array();
+        // parse data from /tweets/index
+        $timeline_tweets = $array_body2["body"]["div"]["div"][1]["div"];
+        $this->assertSame(count($timeline_tweets), 2);
+        $first_tweet_form = $timeline_tweets[1]["div"]["div"][1]["form"];
+        $first_tweet_unretweet_url = $first_tweet_form["@attributes"]["action"];
+        $first_tweet_unretweet_button = $first_tweet_form["input"][1]["@attributes"]["value"];
+        $this->assertSame("http://localhost:8081/tweets/unretweet/".$tweet_id, $first_tweet_unretweet_url);
+        $this->assertSame($first_tweet_unretweet_button, "Unretweet");
+        // get /tweets/show/:id
+        $request_url3 = "http://localhost:8081/tweets/show/".$tweet_id;
+        $request3 = Request::forge($request_url3, "curl")->set_method("GET");
+        $request3->set_option(CURLOPT_COOKIE, build_cookie($cookie));
+        $response3 = $request3->execute()->response();
+        $array_body3 = Format::forge($response3->body, "xml")->to_array();
+        // parse data from /tweets/show/:id
+        $unretweet_button = $array_body3["body"]["div"]["div"][1]["div"]["div"][1]["form"]["input"][1]["@attributes"]["value"];
+        $this->assertSame($unretweet_button, "Unretweet");
+        // post /tweets/unretweet/:id 
+        $request_url4 = "http://localhost:8081/tweets/unretweet/".$tweet_id;
+        $request4 = Request::forge($request_url4, "curl")->set_method("POST");
+        $request4->set_option(CURLOPT_COOKIE, build_cookie($cookie));
+        $response4 = $request4->execute()->response();
+        $array_body4 = Format::forge($response4->body, "xml")->to_array();
+        // parse data from /tweets/retweet/:id 
+        $title = $array_body4["body"]["div"]["div"][1]["h5"];
+        $this->assertSame($title, "Successfully cancel your retweet!");
+    }
+    // check whether invalid cookie user fail unretweet
+    public function test_unretweet_invalid_cookie_user_fail_unretweet() {
+        // initialization
+        User::deleteAllUsers();
+        Tweet::deleteAllTweets();
+        [$user1_id, $user1_cookie] = User::insertUser("hoge12@hoge.com", "hogehoge", null, null);
+        $tweet_id = Tweet::insertTweet("test tweet1", $user1_id, $user1_cookie);
+        // setting
+        $cookie = array();
+        $wrong_cookie = array();
+        $invalid_cookie = $user1_cookie."_test_fail";
+        $wrong_cookie["cookie_value"] = $invalid_cookie;
+        $wrong_cookie["user_id"] = $user1_id;
+        $cookie["cookie_value"] = $user1_cookie;
+        $cookie["user_id"] = $user1_id;
+        // retweet
+        $request_url = "http://localhost:8081/tweets/retweet/".$tweet_id;
+        $request = Request::forge($request_url, "curl")->set_method("POST");
+        $request->set_option(CURLOPT_COOKIE, build_cookie($cookie));
+        $response = $request->execute()->response();
+        // unretweet
+        $request2_url = "http://localhost:8081/tweets/unretweet/".$tweet_id;
+        $request2 = Request::forge($request2_url, "curl")->set_method("POST");
+        $request2->set_option(CURLOPT_COOKIE, build_cookie($wrong_cookie));
+        $response2 = $request2->execute()->response();
+        $array_body2 = Format::forge($response2->body, "xml")->to_array();
+        // parse data from unretweet
+        $title = $array_body2["body"]["div"]["div"][1]["h5"];
+        $this->assertSame($title, "Fail to cancel retweet.");
+    }
+    // check whether invalid userid user fail unretweet
+    public function test_unretweet_invalid_userid_user_fail_unretweet() {
+        // initialization
+        User::deleteAllUsers();
+        Tweet::deleteAllTweets();
+        [$user1_id, $user1_cookie] = User::insertUser("hoge12@hoge.com", "hogehoge", null, null);
+        $tweet_id = Tweet::insertTweet("test tweet1", $user1_id, $user1_cookie);
+        // setting
+        $cookie = array();
+        $wrong_cookie = array();
+        $wrong_cookie["cookie_value"] = $user1_cookie;
+        $wrong_cookie["user_id"] = $user1_id + 10;
+        $cookie["cookie_value"] = $user1_cookie;
+        $cookie["user_id"] = $user1_id;
+        // retweet
+        $request_url = "http://localhost:8081/tweets/retweet/".$tweet_id;
+        $request = Request::forge($request_url, "curl")->set_method("POST");
+        $request->set_option(CURLOPT_COOKIE, build_cookie($cookie));
+        $response = $request->execute()->response();
+        // unretweet
+        $request2_url = "http://localhost:8081/tweets/unretweet/".$tweet_id;
+        $request2 = Request::forge($request2_url, "curl")->set_method("POST");
+        $request2->set_option(CURLOPT_COOKIE, build_cookie($wrong_cookie));
+        $response2 = $request2->execute()->response();
+        $array_body2 = Format::forge($response2->body, "xml")->to_array();
+        // parse data from unretweet
+        $title = $array_body2["body"]["div"]["div"][1]["h5"];
+        $this->assertSame($title, "Fail to cancel retweet.");
+    }
+    // check whether non cookie user fail unretweet
+    public function test_unretweet_non_cookie_user_fail_unretweet() {
+        // initialization
+        User::deleteAllUsers();
+        Tweet::deleteAllTweets();
+        [$user1_id, $user1_cookie] = User::insertUser("hoge12@hoge.com", "hogehoge", null, null);
+        $tweet_id = Tweet::insertTweet("test tweet1", $user1_id, $user1_cookie);
+        $cookie = array();
+        $cookie["cookie_value"] = $user1_cookie;
+        $cookie["user_id"] = $user1_id;
+        // retweet
+        $request_url = "http://localhost:8081/tweets/retweet/".$tweet_id;
+        $request = Request::forge($request_url, "curl")->set_method("POST");
+        $request->set_option(CURLOPT_COOKIE, build_cookie($cookie));
+        $response = $request->execute()->response();
+        // unretweet
+        $request2_url = "http://localhost:8081/tweets/unretweet/".$tweet_id;
+        $request2 = Request::forge($request2_url, "curl")->set_method("POST");
+        $response2 = $request2->execute()->response();
+        $array_body2 = Format::forge($response2->body, "xml")->to_array();
+        // parse data from unretweet
+        $title = $array_body2["body"]["div"]["div"][1]["h5"];
+        $this->assertSame($title, "Fail to cancel retweet.");
+    }
+    // check whether non exist tweet fail unretweet
+    public function test_unretweet_non_exist_tweet_fail_unretweet() {
+        // initialization
+        User::deleteAllUsers();
+        Tweet::deleteAllTweets();
+        [$user1_id, $user1_cookie] = User::insertUser("hoge12@hoge.com", "hogehoge", null, null);
+        $tweet_id = Tweet::insertTweet("test tweet1", $user1_id, $user1_cookie);
+        $cookie = array();
+        $cookie["cookie_value"] = $user1_cookie;
+        $cookie["user_id"] = $user1_id;
+        // retweet
+        $request_url = "http://localhost:8081/tweets/retweet/".$tweet_id;
+        $request = Request::forge($request_url, "curl")->set_method("POST");
+        $request->set_option(CURLOPT_COOKIE, build_cookie($cookie));
+        $response = $request->execute()->response();
+        // unretweet
+        $invalid_tweet_id = $tweet_id + 10;
+        $request2_url = "http://localhost:8081/tweets/unretweet/".$invalid_tweet_id;
+        $request2 = Request::forge($request2_url, "curl")->set_method("POST");
+        $request2->set_option(CURLOPT_COOKIE, build_cookie($cookie));
+        $response2 = $request2->execute()->response();
+        $array_body2 = Format::forge($response2->body, "xml")->to_array();
+        // parse data from unretweet
+        $title = $array_body2["body"]["div"]["div"][1]["h5"];
+        $this->assertSame($title, "Fail to cancel retweet.");
+    }
+    // check whether non retweet tweet cannot unretweet
+    public function test_unretweet_non_retweet_tweet_fail_unretweet() {
+        // initialization
+        User::deleteAllUsers();
+        Tweet::deleteAllTweets();
+        [$user1_id, $user1_cookie] = User::insertUser("hoge12@hoge.com", "hogehoge", null, null);
+        $tweet_id = Tweet::insertTweet("test tweet1", $user1_id, $user1_cookie);
+        $tweet2_id = Tweet::insertTweet("test tweet2", $user1_id, $user1_cookie);
+        $cookie = array();
+        $cookie["cookie_value"] = $user1_cookie;
+        $cookie["user_id"] = $user1_id;
+        // retweet
+        $request_url = "http://localhost:8081/tweets/retweet/".$tweet_id;
+        $request = Request::forge($request_url, "curl")->set_method("POST");
+        $request->set_option(CURLOPT_COOKIE, build_cookie($cookie));
+        $response = $request->execute()->response();
+        // unretweet
+        $request2_url = "http://localhost:8081/tweets/unretweet/".$tweet2_id;
+        $request2 = Request::forge($request2_url, "curl")->set_method("POST");
+        $request2->set_option(CURLOPT_COOKIE, build_cookie($cookie));
+        $response2 = $request2->execute()->response();
+        $array_body2 = Format::forge($response2->body, "xml")->to_array();
+        // parse data from unretweet
+        $title = $array_body2["body"]["div"]["div"][1]["h5"];
+        $this->assertSame($title, "Fail to cancel retweet.");
+    }
+    // check whether after 2 people retweet can unretweet
+    public function test_unretweet_2people_retweet_can_unretweet() {
+        // initialization
+        User::deleteAllUsers();
+        Tweet::deleteAllTweets();
+        [$user1_id, $user1_cookie] = User::insertUser("hoge1@hoge.com", "hogehoge", null, null);
+        [$user2_id, $user2_cookie] = User::insertUser("hoge2@hoge.com", "hogehoge", null, null);
+        $tweet1_id = Tweet::insertTweet("test tweet1", $user1_id, $user1_cookie);
+        $tweet2_id = Tweet::insertTweet("test tweet2", $user1_id, $user1_cookie);
+        $tweet3_id = Tweet::insertTweet("test tweet3", $user2_id, $user2_cookie);
+        $tweet4_id = Tweet::insertTweet("test tweet4", $user2_id, $user2_cookie);
+        // setting
+        $cookie1 = array();
+        $cookie1["cookie_value"] = $user1_cookie;
+        $cookie1["user_id"] = $user1_id;
+        $cookie2 = array();
+        $cookie2["cookie_value"] = $user2_cookie;
+        $cookie2["user_id"] = $user2_id;
+        // retweet 1
+        $request_url = "http://localhost:8081/tweets/retweet/".$tweet1_id;
+        $request = Request::forge($request_url, "curl")->set_method("POST");
+        $request->set_option(CURLOPT_COOKIE, build_cookie($cookie1));
+        $response = $request->execute()->response();
+        // retweet 2
+        $request2_url = "http://localhost:8081/tweets/retweet/".$tweet2_id;
+        $request2 = Request::forge($request2_url, "curl")->set_method("POST");
+        $request2->set_option(CURLOPT_COOKIE, build_cookie($cookie2));
+        $response2 = $request2->execute()->response();
+        // unretweet 1
+        $request3_url = "http://localhost:8081/tweets/unretweet/".$tweet1_id;
+        $request3 = Request::forge($request3_url, "curl")->set_method("POST");
+        $request3->set_option(CURLOPT_COOKIE, build_cookie($cookie1));
+        $response3 = $request3->execute()->response();
+        $array_body3 = Format::forge($response3->body, "xml")->to_array();
+        $title = $array_body3["body"]["div"]["div"][1]["h5"];
+        $this->assertSame($title, "Successfully cancel your retweet!");
+        // get /tweets/show/:id
+        $request4_url = "http://localhost:8081/tweets/show/".$tweet1_id;
+        $request4 = Request::forge($request4_url, "curl")->set_method("GET");
+        $request4->set_option(CURLOPT_COOKIE, build_cookie($cookie1));
+        $response4 = $request4->execute()->response();
+        $array_body4 = Format::forge($response4->body, "xml")->to_array();
+        $retweet_button = $array_body4["body"]["div"]["div"][1]["div"]["div"][1]["form"]["input"][1]["@attributes"]["value"];
+        $this->assertSame($retweet_button, "Retweet");
+    }
 }

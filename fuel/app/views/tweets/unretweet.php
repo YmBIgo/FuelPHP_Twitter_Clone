@@ -10,7 +10,7 @@
 		<h5>Fail to cancel retweet.</h5>
 	<?php } else { ?>
 		<h5>Successfully cancel your retweet!</h5>
-		<p>Your retweet is canceled.</a></p>
+		<p>Your retweet is canceled.</p>
 	<?php } ?>
 <?php } else { ?>
 	<h5>You should login first to retweet ...</h5>
