@@ -49,5 +49,6 @@ return array(
 	'tweets/new' => array('tweets/new', 'name' => 'tweet_new'),
 	'tweets/create' => array('tweets/create', 'name' => 'tweet_new'),
 	'tweets/retweet(/:id)' => array('tweets/retweet', 'name' => 'tweet_retweet'),
-	'tweets/unretweet(/:id)' => array('tweets/unretweet', 'name' => 'tweet_unretweet')
+	'tweets/unretweet(/:id)' => array('tweets/unretweet', 'name' => 'tweet_unretweet'),
+	'tweets/reply(/:id)' => array('tweets/reply', 'name' => 'tweet_reply'),
 );

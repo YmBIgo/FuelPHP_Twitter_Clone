@@ -77,6 +77,7 @@ class Tweet extends \Orm\Model
 	public static function fetchTimeline() {
 		$query = DB::select("id", "content", "user_id", "is_reply", "is_retweet", "created_at", "updated_at")->from("tweets");
 		$query->where_open()->where("is_reply", 0)->where_close();
+		$query->order_by("id", "desc");
 		$result = $query->as_assoc()->execute();
 		return $result;
 	}

@@ -106,6 +106,9 @@ class Test_Model_Tweet extends TestCase {
         $all_tweets = Tweet::fetchAll();
         $this->assertSame(count($all_tweets), 1);
         $this->assertSame($all_tweets[0]["content"], "test tweet");
+        $timeline_tweets = Tweet::fetchTimeline();
+        $this->assertSame(count($timeline_tweets), 1);
+        $this->assertSame($timeline_tweets[0]["content"], "test tweet");
     }
     // check whether fetch all works across 2 users
     public function test_tweet_fetch_all2() {
@@ -125,6 +128,11 @@ class Test_Model_Tweet extends TestCase {
         $this->assertSame($all_tweets[0]["content"], "test tweet3");
         $this->assertSame($all_tweets[1]["content"], "test tweet2");
         $this->assertSame($all_tweets[2]["content"], "test tweet");
+        $timeline_tweets = Tweet::fetchTimeline();
+        $this->assertSame(count($timeline_tweets), 3);
+        $this->assertSame($timeline_tweets[0]["content"], "test tweet3");
+        $this->assertSame($timeline_tweets[1]["content"], "test tweet2");
+        $this->assertSame($timeline_tweets[2]["content"], "test tweet");        
     }
     // check whether fetch all works across 3 users
     public function test_tweet_fetch_all3() {
@@ -148,6 +156,10 @@ class Test_Model_Tweet extends TestCase {
         $this->assertSame(count($all_tweets), 5);
         $this->assertSame($all_tweets[0]["content"], "test tweet5");
         $this->assertSame($all_tweets[2]["content"], "test tweet3");
+        $timeline_tweets = Tweet::fetchTimeline();
+        $this->assertSame(count($timeline_tweets), 5);
+        $this->assertSame($timeline_tweets[0]["content"], "test tweet5");
+        $this->assertSame($timeline_tweets[2]["content"], "test tweet3");
     }
 
     // < Fetch check >

@@ -40,10 +40,6 @@
 				</div>
 				<div class="col-sm-4">
 				</div>
-				<div class="col-sm-12 text-left twitter-card-reply-area">
-					<textarea class="form-control"></textarea>
-					<input type="submit" class="btn btn-primary" value="Reply"/>
-				</div>
 			</div>
 		</div>
 	<?php } ?>

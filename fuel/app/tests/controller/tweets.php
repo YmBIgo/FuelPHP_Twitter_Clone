@@ -32,8 +32,8 @@ class Test_Controller_Tweet extends TestCase {
         $request = Request::forge($request_url, "curl")->set_method("GET");
         $response = $request->execute()->response();
         $array_body = Format::forge($response->body, "xml")->to_array();
-        $tweet_username = $array_body["body"]["div"]["div"][1]["h5"];
-        $tweet_content = $array_body["body"]["div"]["div"][1]["p"];
+        $tweet_username = $array_body["body"]["div"]["div"][1]["h5"][0];
+        $tweet_content = $array_body["body"]["div"]["div"][1]["p"][0];
         $this->assertSame($tweet_username, "UserName : ");
         $this->assertSame($tweet_content, "Content : test tweet1");
     }

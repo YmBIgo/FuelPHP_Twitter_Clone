@@ -31,6 +31,16 @@ class Controller_Tweets extends Controller_Template
 				$token['token'] = Security::fetch_token();
 				$data["token"] = $token;
 			}
+			$replies = Tweet::fetchReplyByTweetId($id);
+			$user_append_replies = array();
+			if ($replies[0] != false) {
+				foreach($replies as $reply) {
+					$reply_user = User::fetchByIdSafe($reply["user_id"])[0];
+					$is_retweet_exist_for_reply = Tweet::fetchRetweetByTweetIdAndUserId($reply["id"], $cookie_user[0]["id"])[0];
+					array_push($user_append_replies, [$reply, $reply_user, $is_retweet_exist_for_reply]);
+				}
+			}
+			$data["replies"] = $user_append_replies;
 		}
 		$data["subnav"] = array('show'=> 'active' );
 		$this->template->title = 'Tweets - Show';
@@ -56,7 +66,8 @@ class Controller_Tweets extends Controller_Template
 		$token['token'] = Security::fetch_token();
 		$data["token"] = $token;
 		// tweet
-		$tweets = Tweet::fetchAll();
+		// $tweets = Tweet::fetchAll();
+		$tweets = Tweet::fetchTimeline();
 		$tweets_with_user = array();
 		foreach ( $tweets as $tweet ) {
 			$user = User::fetchByIdSafe($tweet["user_id"]);
@@ -162,6 +173,31 @@ class Controller_Tweets extends Controller_Template
 			$data["unretweer_result"] = false;
 		}
 		$this->template->content = View::forge('tweets/unretweet', $data);
+	}
+
+	public function action_reply() {
+		$data = array();
+		$data["subnav"] = array();
+		$this->template->title = 'Tweets - Reply';
+		$cookie_value = Cookie::get('cookie_value');
+		$cookie_user_id = Cookie::get("user_id");
+		$cookie_user = User::fetchByCookieAndId($cookie_value, $cookie_user_id);
+		$data["cookie_user"] = $cookie_user;
+		$data["tweet_id"] = false;
+		if ( $cookie_user == false ) {
+			$this->template->content = View::forge('tweets/reply', $data);
+			return;
+		}
+		$params = Request::active()->params();
+		$tweet_id = $params['id'];
+		if (Security::check_token() || \Fuel::$env == "test") {
+			$post = Input::post();
+			$reply_tweet_id = Tweet::replyTweet($tweet_id, $post["content"], $cookie_user_id, $cookie_value);
+			if ($reply_tweet_id != false) {
+				$data["tweet_id"] = $reply_tweet_id;
+			}
+		}
+		$this->template->content = View::forge('tweets/reply', $data);
 	}
 
 }
