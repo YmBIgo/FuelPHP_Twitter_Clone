@@ -9,6 +9,9 @@
 	<?php if($tweet["is_retweet"] != 0) { ?>
 		<p><small>[ Retweet Tweet ] <a href="/tweets/show/<?php echo $tweet["is_retweet"] ?>">original tweet</a></small></p>
 	<?php } ?>
+	<?php if ($tweet["is_reply"] != 0) { ?>
+		<p><small>[ Reply Tweet ] <a href="/tweets/show/<?php echo $tweet["is_reply"] ?>">original tweet</a></small></p>
+	<?php } ?>
 	<h5>UserName : <a href="/users/show/<?php echo $user["id"] ?>"><?php echo $user["name"] ?></a></h5>
 	<small><?php echo $tweet["created_at"] ?></small>
 	<p>Content : <?php echo $tweet["content"] ?></p>
@@ -58,10 +61,12 @@
 	</div>
 	<hr/>
 	<h5>Replies</h5>
-	<hr/>
+	<br/>
 	<?php if ( count($replies) != 0 ) { ?>
+		<div class="tweet_replies">
 		<?php foreach($replies as $reply) { ?>
-			<div>
+			<div class="tweet_card">
+				<p><small>[ Reply Tweet ] <a href="/tweets/show/<?php echo $reply[0]["id"] ?>">original tweet</a></small></p>
 				<h5>UserName : <a href="/users/show/<?php echo $reply[1]["id"] ?>"><?php echo $reply[1]["name"] ?></a></h5>
 				<small><?php echo $reply[0]["created_at"] ?></small>
 				<p>Content : <a href="/tweets/show/<?php echo $reply[0]["id"] ?>"><?php echo $reply[0]["content"] ?></a></p>
@@ -96,11 +101,13 @@
 						</div>
 					<?php } ?>
 					</div>
-				<hr/>
 			</div>
 		<?php } ?>
+		</div>
 	<?php } else { ?>
-		<p>No Replies Found...</p>
+		<div class="tweet_replies">
+			<p>No Replies Found...</p>
+		</div>
 	<?php } ?>
 <?php } else { ?>
 	<h5>Tweet Not Found...</h5>
